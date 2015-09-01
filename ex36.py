@@ -8,6 +8,33 @@
 
 import random as rand 
 
+def init_game():
+	init_flags = {
+		'teeth': 0,
+		'shower': 0,
+		'walks': 0,
+		'fed': 0,
+		'dressed': 0,
+		'wash face': 0,
+		'breakfast': 0,
+		'bike prep': 0,
+		'pack lunch': 0,
+		'pack bag':	0,
+	}
+	return init_flags
+
+def score(final_flags):
+	final_score = 0
+	for flag in flags:
+		final_score += flags[flag]
+	if final_score == 10:
+		print "\nScore = 10. You are SO ready for work! Get it!"
+	elif final_score > 7:
+		print "\nScore = %d. You are a bit disheveled but can survive the day." % final_score
+	else:
+		print "\nScore = %d. ... Maybe you should just go back to bed." % final_score
+	print "\nGAME OVER.\n"
+
 # ROOMS
 
 # Bring up current room after action.
@@ -33,6 +60,10 @@ def eval_action(action, room):
 	if "bath" in action:
 		room = 'bathroom'
 		bathroom()
+	elif "sleep" in action or "snooze" in action or "alarm" in action:
+		bed()
+	elif "wake" in action or "get up" in action:
+		bedroom()
 	elif "closet" in action or "clothes" in action or "dressed" in action:
 		room = 'closet'
 		closet()
@@ -48,13 +79,57 @@ def eval_action(action, room):
 	elif "where" in action or "look" in action:
 		current_room(room)
 	elif "quit" in action:
+		score(flags)
 		exit(0)
 	else:
 		print "You cannot do that right now."
 		action = raw_input("> ")
 		eval_action(action, room)
 
+def eval_action_bath(action, room):
+	if "teeth" in action or "tooth" in action:
+		brush_teeth(flags)
+		room = 'bath'
+		action = raw_input("> ")
+		eval_action_bath(action, room)
+	elif "shower" in action:
+		shower(flags)
+		room = 'bath'
+		action = raw_input("> ")
+		eval_action_bath(action,room)
+	elif "bed" in action:
+		bedroom()
+	elif "where" in action or "look" in action:
+		current_room(room)
+	elif "quit" in action:
+		score(flags)
+		exit(0)
+	else:
+		print "You cannot do that right now."
+		room = 'bath'
+		action = raw_input("> ")
+		eval_action_bath(action, room)
 
+
+
+# in bed
+def bed():
+	"""Location: In Bed"""
+	room = 'cama'
+	print """
+ROOM: BED, BEDROOM
+You are lying in bed. You are snuggled up under your down duvet, with your head
+propped comfortably against a feather pillow. Unfortunately, your boyfriend, who
+is asleep next to you, is making quite the racket with his snoring. Your phone
+is on the side of the bed frame, and your headphones are on the headboard.
+
+So is it time to get up?"""
+	
+	user_action = raw_input("> ")
+	eval_action(user_action, room)
+
+
+# in the bedroom
 def bedroom():
 	"""Location: Bedroom"""
 	room = 'bedroom'
@@ -114,7 +189,7 @@ floor.
 There is a door to the bedroom. """ % room
 	
 	user_action = raw_input("> ")
-	eval_action(user_action, room)
+	eval_action_bath(user_action, room)
 
 
 # Living Room
@@ -204,8 +279,43 @@ Calvin and Hobbes are in another room, probably licking their butts.
 		#current_room()
 
 
+# TASKS
+
+def brush_teeth(flag):
+	if flag['teeth'] == 0:
+		print """
+Looking at your reflection in the mirror, you open your mouth wide. Your teeth
+could use a bit of TLC.
+
+You pick up your toothbrush, squeeze a pea-sized dot of toothpaste onto the
+bristles, and begin scrubbing away. ... Brush-a-brush-a-bruuuuuuuush-a ...
+	"""
+		flag['teeth'] = 1 # indicate teeth have already been brushed
+	else:
+		print "You have already brushed your teeth this morning! Get moving!"
+
+def shower(flag):
+	if flag['shower'] == 0:
+		print """
+You turn on the shower and fling your pajamas into the hamper while the water
+warms up. You do the things that people do when taking a shower and emerge
+feeling ready to face the world! 
+
+You wrap yourself and your dripping hair in some towels.
+	"""
+		flag['shower'] = 1 # indicate showered
+	else:
+		print """
+You have already showered this morning! What are you, a clean freak?! """
 
 
+## Ideas to implement
+# -- inventory
+# -- other interactions
+# -- time of day / environmental cues (sunrise, sunset ...)
+
+# ------------------------------------------------------------------------- #
 # Start a new game
-# room = 'bedroom'
-bedroom()
+flags = init_game()
+print flags
+bed()
